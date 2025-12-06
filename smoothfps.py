@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
-# smoothfps_curses.py
-# Matrix-left panel + non-overlapping UI (curses)
+# smoothfps.py — FINAL stable release
+# Matrix-left panel + non-overlapping UI + FPS & Refresh menus
 # Tool by @code07777
+# Telegram: @code07777
+# Channel: https://t.me/codeteamback077
+# Buy VIP file: @code07777
 
 import curses
 import time
 import random
 import subprocess
 import json
+import threading
 import os
+import sys
 
-# -------------------------
+# -----------------------
 # Helpers: device info (Android no-root)
-# -------------------------
+# -----------------------
 def getprop(prop):
     try:
         out = subprocess.check_output(["getprop", prop], stderr=subprocess.DEVNULL)
@@ -33,53 +38,61 @@ def get_device_info():
         total = "Unknown"
     return brand, model, android, cpu, total
 
-# -------------------------
+# -----------------------
 # Matrix runner (draws inside a curses window)
-# -------------------------
-def matrix_runner(win, stop_flag, speed=0.05):
-    # win: curses window object for matrix panel
+# -----------------------
+def matrix_runner(win, stop_flag, speed=0.06):
+    # window: curses window object for matrix panel
     max_y, max_x = win.getmaxyx()
     cols = max_x
     drops = [0] * cols
-    chars = "01"  # lightweight characters for mobile-friendly performance
+    chars = "01"  # lightweight for mobile
     while not stop_flag[0]:
         max_y, max_x = win.getmaxyx()
         cols = max_x
+        # ensure drops list length
+        if len(drops) < cols:
+            drops += [0] * (cols - len(drops))
+        elif len(drops) > cols:
+            drops = drops[:cols]
         for x in range(cols):
             if drops[x] <= 0 and random.random() > 0.97:
                 drops[x] = 1
             if drops[x] > 0:
-                ch = random.choice(chars)
-                # y position cycles; we paint dropping column
+                # y position cycles
                 y = drops[x] % max_y
+                ch = random.choice(chars)
                 try:
                     win.addstr(y, x, ch, curses.color_pair(1))
                 except curses.error:
                     pass
                 drops[x] += 1
-                if drops[x] > max_y + 5:
+                # reset occasionally
+                if drops[x] > max_y + random.randint(2, 8):
                     drops[x] = 0
             else:
-                # occasionally clear top cell
+                # clear top occasionally
                 try:
                     win.addch(0, x, ' ')
                 except curses.error:
                     pass
-        win.refresh()
+        try:
+            win.refresh()
+        except curses.error:
+            pass
         time.sleep(speed)
 
-# -------------------------
-# UI helpers: sliding text
-# -------------------------
-def slide_text(win, row, text, delay=0.01, max_spaces=20, color=0):
+# -----------------------
+# Slide animation on a curses window (left-right-left)
+# -----------------------
+def slide_text(win, row, text, delay=0.008, max_spaces=20, color_pair=2):
     _, width = win.getmaxyx()
-    spaces = min(max_spaces, max(0, width - len(text) - 2))
+    spaces = min(max_spaces, max(0, width - len(text) - 4))
     # left -> right
     for i in range(spaces):
         try:
-            win.move(row, 0)
-            win.clrtoeol()
-            win.addstr(row, i, text, curses.color_pair(color))
+            win.move(row, 0); win.clrtoeol()
+            win.addstr(row, i, text, curses.color_pair(color_pair) | curses.A_BOLD)
             win.refresh()
         except curses.error:
             pass
@@ -87,26 +100,24 @@ def slide_text(win, row, text, delay=0.01, max_spaces=20, color=0):
     # right -> left
     for i in range(spaces, -1, -1):
         try:
-            win.move(row, 0)
-            win.clrtoeol()
-            win.addstr(row, i, text, curses.color_pair(color))
+            win.move(row, 0); win.clrtoeol()
+            win.addstr(row, i, text, curses.color_pair(color_pair) | curses.A_BOLD)
             win.refresh()
         except curses.error:
             pass
         time.sleep(delay)
-    # final fixed
+    # leave final fixed
     try:
-        win.move(row, 0)
-        win.clrtoeol()
-        win.addstr(row, 1, text, curses.color_pair(color))
+        win.move(row, 0); win.clrtoeol()
+        win.addstr(row, 2, text, curses.color_pair(color_pair) | curses.A_BOLD)
         win.refresh()
     except curses.error:
         pass
 
-# -------------------------
-# Save config (safe)
-# -------------------------
-def generate_safe_config(pkg, fps, hz, mode, boost, ts, opt):
+# -----------------------
+# Safe config generator
+# -----------------------
+def generate_safe_config(pkg, fps_choice, hz_choice, mode_choice, boost_choice, ts_choice, opt_choice):
     fps_map = {"1":"60","2":"90","3":"120"}
     hz_map = {"1":"60","2":"90","3":"120"}
     mode_map = {"1":"Extreme","2":"Ultra","3":"Medium"}
@@ -116,16 +127,16 @@ def generate_safe_config(pkg, fps, hz, mode, boost, ts, opt):
 
     cfg = {
         "package": pkg,
-        "recommended_frame_rate": fps_map.get(fps, "60"),
-        "recommended_refresh_rate_hz": hz_map.get(hz, "60"),
-        "performance_mode": mode_map.get(mode, "Medium"),
-        "cpu_gpu_boost": boost_map.get(boost, "Medium"),
-        "touch_sampling": ts_map.get(ts, "Medium"),
-        "hardware_optimization": opt_map.get(opt, "Enable"),
+        "recommended_frame_rate": fps_map.get(fps_choice, "60"),
+        "recommended_refresh_rate_hz": hz_map.get(hz_choice, "60"),
+        "performance_mode": mode_map.get(mode_choice, "Medium"),
+        "cpu_gpu_boost": boost_map.get(boost_choice, "Medium"),
+        "touch_sampling": ts_map.get(ts_choice, "Medium"),
+        "hardware_optimization": opt_map.get(opt_choice, "Enable"),
         "notes": [
             "This file contains device-side recommended settings only.",
             "It does NOT modify game binaries or bypass anti-cheat.",
-            "To apply some changes you may need adb (PC) or manual adjustments.",
+            "To apply some changes you may need adb (PC) or manual OEM settings.",
             "Always backup files before making changes."
         ]
     }
@@ -134,14 +145,14 @@ def generate_safe_config(pkg, fps, hz, mode, boost, ts, opt):
         json.dump(cfg, f, indent=2)
     return fname
 
-# -------------------------
-# Main curses UI
-# -------------------------
+# -----------------------
+# Curses UI main
+# -----------------------
 def curses_main(stdscr):
-    curses.curs_set(1)  # show cursor for input
+    curses.curs_set(1)  # show cursor for inputs
     curses.start_color()
     curses.use_default_colors()
-    # pair 1 = green for matrix; pair 2 = cyan for titles; pair 3 = yellow for prompts
+    # color pairs: 1=matrix green, 2=cyan title, 3=yellow prompt, 4=magenta, 5=white
     curses.init_pair(1, curses.COLOR_GREEN, -1)
     curses.init_pair(2, curses.COLOR_CYAN, -1)
     curses.init_pair(3, curses.COLOR_YELLOW, -1)
@@ -149,22 +160,25 @@ def curses_main(stdscr):
     curses.init_pair(5, curses.COLOR_WHITE, -1)
 
     max_y, max_x = stdscr.getmaxyx()
-    # left panel width (matrix). Adjust to taste: e.g., 40 columns or 40% of screen
-    panel_w = min(40, max(10, max_x // 3))
+    panel_w = min(40, max(10, max_x // 3))        # left matrix panel width
+    ui_w = max_x - panel_w - 2
     panel_h = max_y - 2
 
-    # create windows
-    matrix_win = curses.newwin(panel_h, panel_w, 0, 0)
-    ui_win = curses.newwin(panel_h, max_x - panel_w, 0, panel_w + 1)
+    # windows
+    matrix_win = curses.newwin(panel_h, panel_w, 1, 1)
+    ui_win = curses.newwin(panel_h, ui_w, 1, panel_w + 2)
+    stdscr.border()
+    stdscr.refresh()
 
     # start matrix thread
     stop_flag = [False]
-    t = threading.Thread(target=matrix_runner, args=(matrix_win, stop_flag, 0.06), daemon=True)
+    t = threading.Thread(target=matrix_runner, args=(matrix_win, stop_flag, 0.055), daemon=True)
     t.start()
 
-    # draw header in ui_win (safe area)
-    brand, model, android, cpu, ram = get_device_info()
+    # draw UI header
+    ui_win.clear()
     ui_win.border()
+    brand, model, android, cpu, ram = get_device_info()
     ui_win.addstr(1, 2, "◖ DEVICE AND HARDWARE INFO ◗", curses.color_pair(2) | curses.A_BOLD)
     ui_win.addstr(3, 2, f"➤ DEVICE  : {brand}", curses.color_pair(5))
     ui_win.addstr(4, 2, f"➤ MODEL   : {model}", curses.color_pair(5))
@@ -176,74 +190,142 @@ def curses_main(stdscr):
     ui_win.addstr(11, 2, "Channel: t.me/codeteamback077", curses.color_pair(4))
     ui_win.refresh()
 
-    # slide title effect
-    slide_text(ui_win, 1, "◖ DEVICE AND HARDWARE INFO ◗", delay=0.008, max_spaces=20, color=2)
+    # slide-in title
+    slide_text(ui_win, 1, "◖ DEVICE AND HARDWARE INFO ◗", delay=0.006, max_spaces=18, color_pair=2)
 
-    # input prompts (use ui_win.getstr to keep input in UI area)
-    def prompt(y, prompt_text, default=""):
-        ui_win.addstr(y, 2, " " * (ui_win.getmaxyx()[1] - 4))
-        ui_win.addstr(y, 2, prompt_text, curses.color_pair(3))
+    # small helper to prompt inside ui_win
+    def prompt(y, label, default=""):
+        ui_win.addstr(y, 2, " " * (ui_w - 4))
+        ui_win.addstr(y, 2, label, curses.color_pair(3))
         ui_win.refresh()
         curses.echo()
-        ui_win.move(y, 2 + len(prompt_text) + 1)
-        s = ui_win.getstr(y, 2 + len(prompt_text) + 1, 60)
+        ui_win.move(y, 2 + len(label) + 1)
+        s = ui_win.getstr(y, 2 + len(label) + 1, 60)
         curses.noecho()
         try:
-            return s.decode().strip() or default
+            val = s.decode().strip()
         except:
+            val = ""
+        if val == "":
             return default
+        return val
 
-    pkg = prompt(14, "Game Package Name (default com.tencent.ig): ", "com.tencent.ig")
-    fps = prompt(16, "Select FPS [1]60 [2]90 [3]120 (default 2): ", "2")
-    hz = prompt(18, "Select Refresh [1]60 [2]90 [3]120 (default 2): ", "2")
-    mode = prompt(20, "Select Mode [1]Extreme [2]Ultra [3]Medium (default 1): ", "1")
-    boost = prompt(22, "CPU/GPU Boost [1]Max [2]Medium (default 2): ", "2")
-    ts = prompt(24, "Touch Sampling [1]Max [2]Medium (default 1): ", "1")
-    opt = prompt(26, "Hardware Opt [1]Enable [2]Disable (default 1): ", "1")
+    # FPS menu (interactive)
+    def fps_menu():
+        ui_win.addstr(14, 2, " " * (ui_w - 4))
+        ui_win.addstr(14, 2, "◖ Select Gaming Frame Rate ◗", curses.color_pair(2))
+        ui_win.addstr(16, 4, "[1] 60FPS  (Stable)")
+        ui_win.addstr(17, 4, "[2] 90FPS  (Stable)")
+        ui_win.addstr(18, 4, "[3] 120FPS (Device support only)")
+        ui_win.refresh()
+        choice = prompt(20, "Select Option (1-3):", "2")
+        return choice if choice in ("1","2","3") else "2"
 
-    # show applying animations in ui_win while matrix continues
-    def apply_steps():
-        steps = [
-            "Applying Lag Fix Scripts…",
-            "Optimizing RAM Performance…",
-            "Optimizing System Performance…",
-            "Rechecking Script And Files…"
-        ]
-        row = 28
-        for s in steps:
-            slide_text(ui_win, row, s, delay=0.008, max_spaces=18, color=3)
-            # small progress bar
-            for i in range(0, 21):
-                try:
-                    bar = "[" + ("#" * i).ljust(20) + "]"
-                    ui_win.addstr(row + 1, 2, f"{bar} {i*5}%", curses.color_pair(5))
-                    ui_win.refresh()
-                except curses.error:
-                    pass
-                time.sleep(0.06)
-            row += 3
+    # Refresh menu
+    def hz_menu():
+        ui_win.addstr(22, 2, " " * (ui_w - 4))
+        ui_win.addstr(22, 2, "◖ Select Gaming Refresh Rate ◗", curses.color_pair(2))
+        ui_win.addstr(24, 4, "[1] 60HZ  (Stable)")
+        ui_win.addstr(25, 4, "[2] 90HZ  (Stable)")
+        ui_win.addstr(26, 4, "[3] 120HZ (Device support only)")
+        ui_win.refresh()
+        choice = prompt(28, "Select Option (1-3):", "2")
+        return choice if choice in ("1","2","3") else "2"
 
-    apply_steps()
+    # Other menus (mode, boost, touch, opt)
+    def mode_menu():
+        ui_win.addstr(30, 2, " " * (ui_w - 4))
+        ui_win.addstr(30, 2, "◖ Select Gaming Mode ◗", curses.color_pair(2))
+        ui_win.addstr(32, 4, "[1] Extreme")
+        ui_win.addstr(33, 4, "[2] Ultra (May heat)")
+        ui_win.addstr(34, 4, "[3] Medium")
+        ui_win.refresh()
+        choice = prompt(36, "Select Option (1-3):", "1")
+        return choice if choice in ("1","2","3") else "1"
 
-    # stop matrix and show final messages
+    def boost_menu():
+        ui_win.addstr(38, 2, " " * (ui_w - 4))
+        ui_win.addstr(38, 2, "◖ CPU/GPU Boost ◗", curses.color_pair(2))
+        ui_win.addstr(40, 4, "[1] Maximum (May heat)")
+        ui_win.addstr(41, 4, "[2] Medium (Stable)")
+        ui_win.refresh()
+        choice = prompt(43, "Select Option (1-2):", "2")
+        return choice if choice in ("1","2") else "2"
+
+    def touch_menu():
+        ui_win.addstr(45, 2, " " * (ui_w - 4))
+        ui_win.addstr(45, 2, "◖ Touch Sampling Rate ◗", curses.color_pair(2))
+        ui_win.addstr(47, 4, "[1] Maximum")
+        ui_win.addstr(48, 4, "[2] Medium")
+        ui_win.refresh()
+        choice = prompt(50, "Select Option (1-2):", "1")
+        return choice if choice in ("1","2") else "1"
+
+    def opt_menu():
+        ui_win.addstr(52, 2, " " * (ui_w - 4))
+        ui_win.addstr(52, 2, "◖ Hardware Optimization ◗", curses.color_pair(2))
+        ui_win.addstr(54, 4, "[1] Enable")
+        ui_win.addstr(55, 4, "[2] Disable")
+        ui_win.refresh()
+        choice = prompt(57, "Select Option (1-2):", "1")
+        return choice if choice in ("1","2") else "1"
+
+    # Run menus
+    pkg = prompt(12, "Game Package (default=com.tencent.ig):", "com.tencent.ig")
+    fps_choice = fps_menu()
+    hz_choice = hz_menu()
+    mode_choice = mode_menu()
+    boost_choice = boost_menu()
+    ts_choice = touch_menu()
+    opt_choice = opt_menu()
+
+    # Applying steps animation
+    steps = [
+        "Applying Lag Fix Scripts…",
+        "Optimizing RAM Performance…",
+        "Optimizing System Performance…",
+        "Rechecking Script And Files…"
+    ]
+    row = 60
+    if row + 8 > panel_h - 1:
+        row = panel_h - 10
+    for s in steps:
+        slide_text(ui_win, row, s, delay=0.006, max_spaces=18, color_pair=3)
+        # small progress bar
+        for i in range(21):
+            try:
+                bar = "[" + ("#" * i).ljust(20) + "]"
+                ui_win.addstr(row + 1, 2, f"{bar} {i*5}%", curses.color_pair(5))
+                ui_win.refresh()
+            except curses.error:
+                pass
+            time.sleep(0.05)
+        row += 3
+
+    # Stop matrix
     stop_flag[0] = True
-    time.sleep(0.08)  # allow thread to finish
+    time.sleep(0.08)
 
-    fname = generate_safe_config(pkg, fps, hz, mode, boost, ts, opt)
-    ui_win.addstr( row + 2, 2, f"Config Generated: {fname}", curses.color_pair(2))
-    ui_win.addstr( row + 4, 2, "All Script Applied Successfully. Restart device for best results.", curses.color_pair(4))
-    ui_win.addstr( row + 6, 2, "Press any key to exit.", curses.color_pair(3))
+    # Generate safe config file
+    fname = generate_safe_config(pkg, fps_choice, hz_choice, mode_choice, boost_choice, ts_choice, opt_choice)
+
+    ui_win.addstr(row + 2, 2, f"Config generated: {fname}", curses.color_pair(2))
+    ui_win.addstr(row + 4, 2, "All scripts applied successfully. Restart device recommended.", curses.color_pair(4))
+    ui_win.addstr(row + 6, 2, "Press any key to exit.", curses.color_pair(3))
     ui_win.refresh()
+    ui_win.getch()
 
-    ui_win.getch()  # wait for key
-    return
-
+# -----------------------
+# Entry
+# -----------------------
 def main():
     try:
         curses.wrapper(curses_main)
     except Exception as e:
         print("Error running terminal UI:", e)
-        print("Make sure your terminal supports curses (Termux or Linux).")
+        print("If you are on Termux and get 'curses' errors, ensure Python/curses are installed.")
+        print("Run: pkg install python -y  (or ensure Python3 with curses support).")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
