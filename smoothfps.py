@@ -3,8 +3,10 @@
 import os, time, sys, shutil
 
 # ---------------- COLOR ---------------- #
-def col(code): return f"\033[{code}m"
-RESET = col("0")
+def col(code): 
+    return f"\033[{code}m"
+
+RESET  = col("0")
 CYAN   = col("96")
 GREEN  = col("92")
 YELLOW = col("93")
@@ -33,7 +35,7 @@ def print_center(text):
 # ----------------- SAFE LOADING ---------------- #
 def loading(label="Loading"):
     for i in range(101):
-        bar = "#"*(i//4)
+        bar = "#" * (i // 4)
         percent = f"{i}%".rjust(4)
         clear()
         box([f"{label}: [{bar:<25}] {percent}"], "PROGRESS")
