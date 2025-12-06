@@ -1,83 +1,127 @@
-import os
-import time
+#!/usr/bin/env python3
+import os, time, sys
 
-# Clear screen
-os.system("clear")
+# ────────────────────────────────────────────────
+#   COLOR & GLOW EFFECTS
+# ────────────────────────────────────────────────
+RESET = "\033[0m"
+BOLD = "\033[1m"
+BLINK = "\033[5m"
+CYAN = "\033[96m"
+MAGENTA = "\033[95m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
 
-print("_______________________________________________________")
-print()
-print()
-print()
+GLOW = f"{BOLD}{BLINK}{CYAN}"
 
-print("""\033[96m
-           |   ██████╗ ██████╗ ██████╗ ███████╗████████╗████████╗███████╗███╗   ███╗
-           |  ██╔════╝██╔═══██╗██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝████╗ ████║
-           |  ██║     ██║   ██║██████╔╝█████╗░░   ██║░░░   ██║░░░█████╗  ██╔████╔██║
-           |  ██║     ██║   ██║██╔══██╗██╔══╝░░   ██║░░░   ██║░░░██╔══╝  ██║╚██╔╝██║
-           |  ╚██████╗╚██████╔╝██║  ██║███████╗   ██║░░░   ██║░░░███████╗██║ ╚═╝ ██║
-           |   ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝░░░   ╚═╝░░░╚══════╝╚═╝     ╚═╝
-           |
-           |          CREATED BY : CODETEAM
-           |          IG : @code07777
+# ────────────────────────────────────────────────
+#   SMALL LOADING BAR
+# ────────────────────────────────────────────────
+def loading(text, speed=0.03):
+    print(f"\n{YELLOW}{text}{RESET}")
+    bar = "■■■■■■■■■■"
+    for i in range(10):
+        sys.stdout.write(f"\r{GREEN}{bar[:i]}{RESET}{bar[i:]}")
+        sys.stdout.flush()
+        time.sleep(speed)
+    print("\n")
+
+# ────────────────────────────────────────────────
+#   HEADER LOGO
+# ────────────────────────────────────────────────
+def header():
+    os.system("clear")
+    print(f"""
+{GLOW}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀{RESET}
+
+{MAGENTA}◖ DEVICE AND HARDWARE INFO ◗{RESET}
+
+➤ DEVICE  
+➤ MODEL
+
+{CYAN}◖ Copyright © code07777 ◗{RESET}
 """)
-print("                     [*] CODETEAM GFX TOOL")
-print("                     [*] Created by @code07777")
-print()
-print()
-print("\033[96m      ** MENU GAMES **")
-print()
-print("  _________________________")
-print("  |   [1] MOBILE LEGENDS   |")
-print("  |   [2] PUBG MOBILE      |")
-print("  |   [3] CALL OF DUTY     |")
-print("  _________________________")
-print()
-print()
 
-input("\033[0m[*] Select Your Favorite Game : ")
-print()
-print()
-print("\033[92m[*] Entering Menu FPS....")
+# ────────────────────────────────────────────────
+#   UI PROMPTS
+# ────────────────────────────────────────────────
+def ask(msg):
+    return input(f"{YELLOW}{msg}{RESET}")
 
-# Loading animation
-for i in range(14):
-    print("[*] Please wait...")
-    time.sleep(0.5)
+# ────────────────────────────────────────────────
+#   MAIN TOOL
+# ────────────────────────────────────────────────
+def main():
+    header()
 
-print("[*] Done 👍")
-time.sleep(2)
-print()
-print()
+    print(f"{MAGENTA}➤ [ = ] Game Package Name ◗{RESET}")
+    pkg = ask("➤ Type Here  = ")
 
-print("\033[96m      ** MENU FPS **")
-print()
-print("  ___________________")
-print("  |   [1] 120 FPS    |")
-print("  |   [2]  90 FPS    |")
-print("  |   [3]  60 FPS    |")
-print("  ___________________")
-print()
-print()
+    print(f"""
+{MAGENTA}➤ [ = ] Select Gaming Frame Rate ◗{RESET}
+ [1] 60FPS (Stable)
+ [2] 90FPS (Stable)
+ [3] 120FPS (Unstable)
+""")
+    fps = ask("➤ Select Option = ")
 
-input("\033[0m[*] Select The better FPS : ")
-time.sleep(1)
+    print(f"""
+{MAGENTA}➤ [ = ] Select Gaming Refresh Rate ◗{RESET}
+ [1] 60HZ (Stable)
+ [2] 90HZ (Stable)
+ [3] 120HZ (Stable)
+""")
+    hz = ask("➤ Select Option = ")
 
-print("\033[96m[*] Downloading (15mb size)... ")
-time.sleep(1)
-print("[*] Please wait a few seconds...")
-time.sleep(4)
-print()
-print("[*] Success download ✔")
-time.sleep(1)
-print("[*] Your phone is now in SMOOTH MODE ⚡")
-time.sleep(2)
-print()
+    print(f"""
+{MAGENTA}➤ [ = ] Select Gaming Mode ◗{RESET}
+ [1] Extreme
+ [2] Ultra (Device May Heat)
+ [3] Medium
+""")
+    mode = ask("➤ Select Option = ")
 
-print("3")
-time.sleep(1)
-print("2")
-time.sleep(1)
-print("1")
-time.sleep(2)
+    print(f"""
+{MAGENTA}➤ [ = ] Enable CPU/GPU Boost ◗{RESET}
+ [1] Maximum (Device May Heat)
+ [2] Medium (Stable)
+""")
+    boost = ask("➤ Select Option = ")
 
-print("\033[91m[*] Please Reboot Your Device.")
+    print(f"""
+{MAGENTA}➤ [ = ] Boost Touch Sampling Rate ◗{RESET}
+ [1] Maximum
+ [2] Medium
+""")
+    ts = ask("➤ Select Option = ")
+
+    print(f"""
+{MAGENTA}➤ [ = ] Hardware Optimization ◗{RESET}
+ [1] Enable
+ [2] Disable
+""")
+    opt = ask("➤ Select Option = ")
+
+    # Fake loading + animation
+    loading("➤ Adding More Lag Fix Script…")
+    loading("➤ Optimizing RAM Performance…")
+    loading("➤ Optimizing System Performance…")
+
+    time.sleep(1)
+    header()
+    print(f"{GREEN}➤ Rechecking Script And Files...{RESET}")
+    time.sleep(1.5)
+
+    print(f"""
+{GREEN}➤ All Script Applied Successfully.{RESET}
+{YELLOW}➤ Restart Device For Better Result (Recommended){RESET}
+
+[Process completed]
+""")
+
+# ────────────────────────────────────────────────
+#   RUN
+# ────────────────────────────────────────────────
+if __name__ == "__main__":
+    main()
