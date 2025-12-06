@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os, time, sys
+import subprocess
 
 # ────────────────────────────────────────────────
 #   COLOR & GLOW EFFECTS
@@ -12,17 +13,43 @@ MAGENTA = "\033[95m"
 YELLOW = "\033[93m"
 GREEN = "\033[92m"
 BLUE = "\033[94m"
+WHITE = "\033[97m"
 
 GLOW = f"{BOLD}{BLINK}{CYAN}"
 
 # ────────────────────────────────────────────────
-#   SMALL LOADING BAR
+#   GET DEVICE INFO (Android No-Root)
 # ────────────────────────────────────────────────
-def loading(text, speed=0.03):
+def getprop(prop):
+    try:
+        return subprocess.check_output(["getprop", prop]).decode().strip()
+    except:
+        return "Unknown"
+
+def get_device_info():
+    brand = getprop("ro.product.brand")
+    model = getprop("ro.product.model")
+    android = getprop("ro.build.version.release")
+    cpu = getprop("ro.product.cpu.abi")
+
+    # Get RAM from /proc/meminfo
+    try:
+        mem = open("/proc/meminfo").read()
+        total_ram = mem.split("MemTotal:")[1].split("kB")[0].strip()
+        total_ram = f"{int(total_ram)//1024} MB"
+    except:
+        total_ram = "Unknown"
+
+    return brand, model, android, cpu, total_ram
+
+# ────────────────────────────────────────────────
+#   SMOOTH LOADING ANIMATION
+# ────────────────────────────────────────────────
+def smooth_loading(text, speed=0.015):
     print(f"\n{YELLOW}{text}{RESET}")
-    bar = "■■■■■■■■■■"
-    for i in range(10):
-        sys.stdout.write(f"\r{GREEN}{bar[:i]}{RESET}{bar[i:]}")
+    bar = "■■■■■■■■■■■■■■■■■■■■"
+    for i in range(1, len(bar) + 1):
+        sys.stdout.write(f"\r{GREEN}{bar[:i]}{RESET}")
         sys.stdout.flush()
         time.sleep(speed)
     print("\n")
@@ -32,25 +59,30 @@ def loading(text, speed=0.03):
 # ────────────────────────────────────────────────
 def header():
     os.system("clear")
+    brand, model, android, cpu, ram = get_device_info()
+
     print(f"""
 {GLOW}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀{RESET}
 
 {MAGENTA}◖ DEVICE AND HARDWARE INFO ◗{RESET}
 
-➤ DEVICE  
-➤ MODEL
+{CYAN}➤ DEVICE  : {WHITE}{brand}{RESET}
+{CYAN}➤ MODEL   : {WHITE}{model}{RESET}
+{CYAN}➤ ANDROID : {WHITE}{android}{RESET}
+{CYAN}➤ CPU     : {WHITE}{cpu}{RESET}
+{CYAN}➤ RAM     : {WHITE}{ram}{RESET}
 
 {CYAN}◖ Copyright © code07777 ◗{RESET}
 """)
 
 # ────────────────────────────────────────────────
-#   UI PROMPTS
+#   INPUT PROMPT
 # ────────────────────────────────────────────────
 def ask(msg):
     return input(f"{YELLOW}{msg}{RESET}")
 
 # ────────────────────────────────────────────────
-#   MAIN TOOL
+#   MAIN MENU
 # ────────────────────────────────────────────────
 def main():
     header()
@@ -103,10 +135,10 @@ def main():
 """)
     opt = ask("➤ Select Option = ")
 
-    # Fake loading + animation
-    loading("➤ Adding More Lag Fix Script…")
-    loading("➤ Optimizing RAM Performance…")
-    loading("➤ Optimizing System Performance…")
+    # Smooth animations
+    smooth_loading("➤ Applying Lag Fix Scripts…")
+    smooth_loading("➤ Optimizing RAM Performance…")
+    smooth_loading("➤ Optimizing System Performance…")
 
     time.sleep(1)
     header()
@@ -114,10 +146,10 @@ def main():
     time.sleep(1.5)
 
     print(f"""
-{GREEN}➤ All Script Applied Successfully.{RESET}
-{YELLOW}➤ Restart Device For Better Result (Recommended){RESET}
+{GREEN}➤ All Script Applied Successfully!{RESET}
+{YELLOW}➤ Restart Device For Better Results (Recommended){RESET}
 
-[Process completed]
+[Process Completed]
 """)
 
 # ────────────────────────────────────────────────
