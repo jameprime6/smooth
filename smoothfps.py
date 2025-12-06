@@ -3,22 +3,21 @@ import os, time, sys, random, subprocess
 from threading import Thread
 
 # ────────────────────────────────────────────────
-#   COLORS
+# COLORS + GLOW
 # ────────────────────────────────────────────────
 RESET = "\033[0m"
 BOLD = "\033[1m"
 BLINK = "\033[5m"
+GREEN = "\033[92m"
 CYAN = "\033[96m"
 MAGENTA = "\033[95m"
 YELLOW = "\033[93m"
-GREEN = "\033[92m"
-BLUE = "\033[94m"
 WHITE = "\033[97m"
 
-GLOW = f"{BOLD}{BLINK}{CYAN}"
+GLOW = f"{BOLD}{CYAN}"
 
 # ────────────────────────────────────────────────
-#   GET DEVICE INFO (SAFE NO-ROOT)
+# DEVICE INFO (SAFE)
 # ────────────────────────────────────────────────
 def getprop(prop):
     try:
@@ -42,39 +41,51 @@ def get_device_info():
     return brand, model, android, cpu, total_ram
 
 # ────────────────────────────────────────────────
-#   MATRIX BACKGROUND ANIMATION
+# MATRIX RAIN (NO ERROR VERSION)
 # ────────────────────────────────────────────────
 def matrix_rain():
-    chars = "1234567890abcdef#$%@&?"
+    chars = "01"
+    width = os.get_terminal_size().columns
     while True:
-        print(f"\033[1;32m{random.choice(chars)}{RESET}", end="")
-        time.sleep(0.001)
+        line = "".join(random.choice(chars) for _ in range(width))
+        print(f"\033[1;32m{line}{RESET}")
+        time.sleep(0.03)
 
 def start_matrix():
-    for _ in range(40):
-        Thread(target=matrix_rain, daemon=True).start()
+    Thread(target=matrix_rain, daemon=True).start()
 
 # ────────────────────────────────────────────────
-#   SMOOTH LOADING
+# SIDE SLIDE EFFECT (SMOOTH TEXT)
 # ────────────────────────────────────────────────
-def smooth_loading(text, speed=0.01):
-    print(f"\n{YELLOW}{text}{RESET}")
-    bar = "■■■■■■■■■■■■■■■■■■■■"
-    for i in range(1, len(bar) + 1):
-        sys.stdout.write(f"\r{GREEN}{bar[:i]}{RESET}")
+def slide_text(text):
+    print()
+    for i in range(1, len(text)+1):
+        sys.stdout.write(f"\r{CYAN}{text[:i]}{RESET}")
         sys.stdout.flush()
-        time.sleep(speed)
+        time.sleep(0.02)
     print("\n")
 
 # ────────────────────────────────────────────────
-#   HEADER
+# SMOOTH LOADING BAR
+# ────────────────────────────────────────────────
+def smooth_loading(text):
+    slide_text(text)
+    bar = "■■■■■■■■■■■■■■■■■■■■"
+    for i in range(1, len(bar)+1):
+        sys.stdout.write(f"\r{GREEN}{bar[:i]}{RESET}")
+        sys.stdout.flush()
+        time.sleep(0.02)
+    print("\n")
+
+# ────────────────────────────────────────────────
+# HEADER (WITH GLOW)
 # ────────────────────────────────────────────────
 def header():
     os.system("clear")
     brand, model, android, cpu, ram = get_device_info()
 
     print(f"""
-{GLOW}⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀{RESET}
+{GLOW}═══════════════════════════════════════════════{RESET}
 
 {MAGENTA}◖ DEVICE AND HARDWARE INFO ◗{RESET}
 
@@ -84,97 +95,90 @@ def header():
 {CYAN}➤ CPU     : {WHITE}{cpu}{RESET}
 {CYAN}➤ RAM     : {WHITE}{ram}{RESET}
 
-{CYAN}◖ Copyright © code07777 ◗{RESET}
+{MAGENTA}═══════════════════════════════════════════════{RESET}
 
-{MAGENTA}{BOLD}Tool by @code07777{RESET}
-{GREEN}Telegram : @code07777{RESET}
-{YELLOW}Buy VIP File : @code07777{RESET}
-
-{CYAN}Telegram Channel:{RESET}
+{CYAN}Tool by @code07777{RESET}
 {WHITE}https://t.me/codeteamback077{RESET}
 
 """)
 
 # ────────────────────────────────────────────────
-#   INPUT PROMPT
+# ASK INPUT
 # ────────────────────────────────────────────────
 def ask(msg):
-    return input(f"{YELLOW}{msg}{RESET}")
+    slide_text(msg)
+    return input("➤ ").strip()
 
 # ────────────────────────────────────────────────
-#   MAIN MENU
+# MAIN MENU
 # ────────────────────────────────────────────────
 def main():
     start_matrix()
-    time.sleep(0.2)
+    time.sleep(0.1)
     header()
 
-    print(f"{MAGENTA}➤ [ = ] Game Package Name ◗{RESET}")
-    pkg = ask("➤ Type Here  = ")
+    pkg = ask("Game Package Name")
 
     print(f"""
-{MAGENTA}➤ [ = ] Select Gaming Frame Rate ◗{RESET}
- [1] 60FPS (Stable)
- [2] 90FPS (Stable)
- [3] 120FPS (Unstable)
+{MAGENTA}Select Gaming Frame Rate{RESET}
+ [1] 60FPS  
+ [2] 90FPS  
+ [3] 120FPS  
 """)
-    fps = ask("➤ Select Option = ")
+    fps = ask("Select FPS")
 
     print(f"""
-{MAGENTA}➤ [ = ] Select Gaming Refresh Rate ◗{RESET}
+{MAGENTA}Select Refresh Rate{RESET}
  [1] 60HZ
  [2] 90HZ
  [3] 120HZ
 """)
-    hz = ask("➤ Select Option = ")
+    hz = ask("Select HZ")
 
     print(f"""
-{MAGENTA}➤ [ = ] Select Gaming Mode ◗{RESET}
+{MAGENTA}Gaming Mode{RESET}
  [1] Extreme
- [2] Ultra (Heats)
+ [2] Ultra
  [3] Medium
 """)
-    mode = ask("➤ Select Option = ")
+    mode = ask("Select Mode")
 
     print(f"""
-{MAGENTA}➤ [ = ] CPU/GPU Boost ◗{RESET}
- [1] Maximum
+{MAGENTA}CPU/GPU Boost{RESET}
+ [1] Max
  [2] Medium
 """)
-    boost = ask("➤ Select Option = ")
+    boost = ask("Select Boost")
 
     print(f"""
-{MAGENTA}➤ [ = ] Touch Sampling Rate ◗{RESET}
- [1] Maximum
+{MAGENTA}Touch Sampling Rate{RESET}
+ [1] Max
  [2] Medium
 """)
-    ts = ask("➤ Select Option = ")
+    ts = ask("Select Touch Rate")
 
     print(f"""
-{MAGENTA}➤ [ = ] Hardware Optimization ◗{RESET}
+{MAGENTA}Hardware Optimization{RESET}
  [1] Enable
  [2] Disable
 """)
-    opt = ask("➤ Select Option = ")
+    opt = ask("Select Option")
 
-    smooth_loading("➤ Applying Lag Fix Scripts…")
-    smooth_loading("➤ Optimizing RAM Performance…")
-    smooth_loading("➤ Optimizing System Performance…")
+    smooth_loading("Applying Lag Fix Scripts…")
+    smooth_loading("Optimizing RAM…")
+    smooth_loading("Optimizing System…")
 
-    time.sleep(1)
     header()
-    print(f"{GREEN}➤ Rechecking Script And Files...{RESET}")
-    time.sleep(1.5)
+    slide_text("Rechecking Script And Files...")
+    time.sleep(1)
 
     print(f"""
-{GREEN}➤ All Script Applied Successfully!{RESET}
-{YELLOW}➤ Restart Device For Better Results (Recommended){RESET}
-
-[Process Completed]
+{GREEN}✔ All Scripts Applied Successfully!{RESET}
+{YELLOW}✔ Restart Device For Best Performance!{RESET}
 """)
 
 # ────────────────────────────────────────────────
-#   RUN
+# RUN
 # ────────────────────────────────────────────────
 if __name__ == "__main__":
     main()
