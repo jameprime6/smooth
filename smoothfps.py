@@ -1,3 +1,7 @@
+print("====================================")
+print("     Smooth FPS Tool")
+print("     Made by CODETEAM@code07777")
+print("====================================\n")
 import time
 import os
 
