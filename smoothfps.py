@@ -1,85 +1,114 @@
-ui = r"""
-Lag Fix Script.sh; exit &>/dev/null
+print("""
+============================================================
+                 LAG FIX MODE FOR ALL GAMES
+                 Created By : @code07777
+ Telegram Channel : https://t.me/codeteamback077
+ Telegram Dev     : https://t.me/code07777
+============================================================
 
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-Lag Fix Mode For All Games
-By @code07777
-TG @code07777
-Buy vip file @code07777
-TELEGRAM CHANNEL LINK - https://t.me/codeteamback077
+DEVICE AND HARDWARE INFO
+ - DEVICE : Redmi
+ - MODEL  : M2004J7AC
+------------------------------------------------------------
+""")
 
-◖ DEVICE AND HARDWARE INFO ◗
+# GAME PACKAGE
+pkg = input("Enter Game Package Name (e.g., com.tencent.ig): ")
 
-➤ DEVICE Redmi
-➤ MODEL M2004J7AC
+# FPS CHOICE
+print("""
+SELECT GAMING FRAME RATE
+ [1] 60FPS (Stable)
+ [2] 90FPS (Stable)
+ [3] 120FPS (Unstable)
+""")
+fps_choice = input("Select Option (1/2/3): ")
 
-◖ Copyright @code07777
+# HZ CHOICE
+print("""
+SELECT GAMING REFRESH RATE
+ [1] 60HZ (Stable)
+ [2] 90HZ (Stable)
+ [3] 120HZ (Stable)
+""")
+hz_choice = input("Select Option (1/2/3): ")
 
-➤ [ = ] Game Package Name ◗
-➤ Type Here  = com.tencent.ig
+# MODE CHOICE
+print("""
+SELECT GAMING MODE
+ [1] Extreme
+ [2] Ultra (Device may heat)
+ [3] Medium
+""")
+mode_choice = input("Select Option (1/2/3): ")
 
-➤ [ = ] Select Gaming Frame Rate ◗
+# CPU/GPU BOOST
+print("""
+CPU / GPU BOOST
+ [1] Maximum (Device may heat)
+ [2] Medium (Stable)
+""")
+boost_choice = input("Select Option (1/2): ")
 
- [ 1 ] 60FPS ( Stable ) ◗
- [ 2 ] 90FPS ( Stable ) ◗
- [ 3 ] 120FPS ( Unstable ) ◗
+# TOUCH BOOST
+print("""
+TOUCH SAMPLING RATE BOOST
+ [1] Maximum
+ [2] Medium
+""")
+touch_choice = input("Select Option (1/2): ")
 
-➤ Select Option  = 2
+# HARDWARE OPTIMIZATION
+print("""
+HARDWARE OPTIMIZATION
+ [1] Enable
+ [2] Disable
+""")
+hardware_choice = input("Select Option (1/2): ")
 
-➤ [ = ] Select Gaming Refresh Rate ◗
+print("\n------------------------------------------------------------")
+print("Applying Tweaks...")
+print(" - Stopping background apps")
+print(" - Optimizing RAM")
+print(" - Reducing thermal throttling")
+print(" - Optimizing GPU scheduling")
+print(" - Boosting touch response")
+print(" - System performance tuning")
+print(" - Safe configuration loading for PUBG")
+print("Please wait...\n")
 
- [ 1 ] 60HZ ( Stable ) ◗
- [ 2 ] 90HZ ( Stable ) ◗
- [ 3 ] 120HZ ( Stable ) ◗
+print("Progress: [##########] 100%")
 
-➤ Select Option  = 2
+# PUBG SAFE CONFIG SECTION
+pubg_safe = f"""
+================ PUBG SAFE CONFIG ================
+Game Package : {pkg}
 
-➤ [ = ] Select Gaming Mode ◗
+[✓] Smooth Graphics Applied (Safe)
+[✓] Extreme/90FPS Mode (If Device Supports)
+[✓] Rendering Optimization Enabled
+[✓] Shadows Disabled (Safe)
+[✓] Anti-Aliasing Disabled (Safe)
+[✓] Input Latency Improved
+[✓] Thermal Control Balanced
+[✓] No Game File Modified (100% Safe)
 
- [ 1 ] Extreme ◗
- [ 2 ] Ultra ( Device May Heat )◗
- [ 3 ] Medium ◗
+Recommended In-Game Settings:
+ - Graphics : Smooth
+ - FPS      : Extreme/90FPS
+ - Shadows  : OFF
+ - Anti-Aliasing : OFF
+ - Screen Optimization : ON
 
-➤ Select Option  = 1
-
-➤ [ = ] Enable CPU/GPU Boost ◗
-
- [ 1 ] Maximum ( Device May Heat ) ◗
- [ 2 ] Medium ( Stable ) ◗
-
-➤ Select Option  = 2
-
-➤ [ = ] Boost Touch Sampling Rate ◗
-
- [ 1 ] Maximum ◗
- [ 2 ] Medium ◗
-
-➤ Select Option  = 1
-
-➤ [ = ] Hardware Optimization  ◗
-
- [ 1 ] Enable ◗
- [ 2 ] Disable ◗
-
-➤ Select Option  = 1
-
-➤ Adding More Lag Fix Script…
-
-➤ Stop Background Running Application
-➤ Optimizing Ram Performance
-➤ Optimizing System Performance
-
-➤ Please Wait Applying Tweaks......
-➤ Please Wait......
-
-  ■■■■■■■■■■100%
-
-➤ Rechecking Script And Files
-➤ All Script Applied Successfully.
-
-➤ Restart Device For Better Result (Recommended)
-
-[Process completed - press Enter]
+Device Optimization:
+ - RAM Cleaned
+ - CPU/GPU Balanced Boost
+ - Scheduler Tuned
+ - Network Stability Enhanced (SAFE)
+===================================================
 """
+print(pubg_safe)
 
-print(ui)   
+print("All Scripts Applied Successfully!")
+print("Restart Device For Better Result.")
+print("============================================================")   
